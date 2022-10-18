@@ -1,0 +1,24 @@
+{
+  "name": "nodejs-docker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "info@daniel-pfisterer.de",
+  "license": "MIT",
+  "private": true,
+  "packageManager": "yarn@3.2.4",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev"
+  },
+  "dependencies": {
+    "typescript": "^4.8.4"
+  },
+  "devDependencies": {
+    "turbo": "^1.5.5"
+  }
+}

@@ -1,0 +1,77 @@
+version: "3"
+
+services:
+  mysqldb:
+    container_name: mysqldb
+    env_file: ./.env
+    image: mysql:8.0.31
+    volumes:
+      - database:/var/lib/mysql
+      - "./config/mysql/my.cnf:/etc/mysql/conf.d/my.cnf"
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE=$DB_DATABASE
+      - MYSQL_USER=$DB_USER
+      - MYSQL_PASSWORD=$DB_PASSWORD
+    expose:
+      - $MYSQLDB_DOCKER_PORT
+    ports:
+      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+    networks:
+      - njs
+  phpmyadmin:
+    container_name: pma
+    env_file: ./.env
+    depends_on:
+      - mysqldb
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=mysqldb
+      - MYSQL_ROOT_PASSWORD=MYSQL_ROOT_PASSWORD
+    networks:
+      - njs
+  frontend:
+    container_name: frontend
+    env_file: ./.env
+    build:
+      context: .
+      dockerfile: ./frontend.Dockerfile
+    image: njs/frontend:v1
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - njs
+  api:
+    container_name: api
+    env_file: ./.env
+    build:
+      context: .
+      dockerfile: ./api.Dockerfile
+    image: njs/api:v1
+    depends_on:
+      - mysqldb
+    restart: always
+    ports:
+      - "1337:1337"
+    networks:
+      - njs
+    stdin_open: true
+    tty: true
+    environment:
+      - DB_HOST=mysqldb
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+
+networks:
+  njs:
+    driver: bridge
+
+volumes:
+  database:
